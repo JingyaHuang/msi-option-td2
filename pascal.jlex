@@ -7,12 +7,23 @@ import java_cup.runtime.Symbol;
 %standalone
 
 ICNST = [0-9]+
+ILETTER = [a-zA-Z]+
 
 %%
 
+"+"		{ return new Symbol(sym.TK_ADD);}
+"*"		{ return new Symbol(sym.TK_MULTIPLE);}
+"/"		{ return new Symbol(sym.TK_DIVIDE);}
+"("		{ return new Symbol(sym.TK_PARENTHESE_L);}
+")"		{ return new Symbol(sym.TK_PARENTHESE_R);}
+"-"		{ return new Symbol(sym.TK_MINUS);}
 "print"		{ return new Symbol(sym.TK_PRINT);}
 ";"		{ return new Symbol(sym.TK_SEP);}
+//"dim"		{ return new Symbol(sym.TK_DECLARE);}
+^#.*		{}
+^###[\s\S]*###$	{}
 {ICNST}		{ return new Symbol(sym.TK_ICNST, new Integer(yytext())); }
+{ILETTER}	{ return new Symbol(sym.TK_ILETTER, yytext()); }
 [\ \t\n\r\f]	{ }
 .		{ System.err.println("unexpected char '" + yytext() +
 				     "' line " + yyline);
