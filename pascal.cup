@@ -20,18 +20,23 @@ action code {:
   }
 :}
 
-terminal TK_SEP, TK_PRINT, TK_ADD, TK_MINUS, TK_PARENTHESE_L, TK_PARENTHESE_R, TK_MULTIPLE, TK_DIVIDE, TK_DECLARE, TK_EQUAL, TK_IF, TK_ELSE, TK_THEN, LB, RB;
+terminal TK_SEP, TK_PRINT, TK_ADD, TK_MINUS, TK_PARENTHESE_L, TK_PARENTHESE_R, TK_MULTIPLE, TK_DIVIDE, TK_DECLARE, TK_EQUAL, TK_IF, TK_ELSE, TK_THEN, TK_WHILE, LB, RB, TK_MODULO, TK_INPUT, TK_SQRB_L, TK_SQRB_R;
 terminal Integer TK_ICNST;
 terminal String TK_ILETTER;
 
 non terminal target;
 non terminal String program, linst, inst, print, expr;
 
+precedence left TK_IF, TK_THEN, TK_ELSE, TK_WHILE;
+precedence left LB, RB;
+precedence left TK_SQRB_L, TK_SQRB_R; 
 precedence left TK_EQUAL;
 precedence left TK_DECLARE;
 precedence left TK_ADD, TK_MINUS;
+precedence left TK_MODULO;
 precedence left TK_MULTIPLE, TK_DIVIDE;
 precedence left TK_PARENTHESE_L, TK_PARENTHESE_R;
+precedence left TK_INPUT;
 
 start with target;
 
@@ -45,15 +50,26 @@ linst ::= inst:i {: RESULT = i; :}
   ;
 inst  ::= print:i TK_SEP {: RESULT = i; :}
 	| TK_SEP {: RESULT = ""; :}
+	| TK_INPUT TK_PARENTHESE_L TK_PARENTHESE_R {: RESULT = "\tIN\n"; :}
 	| TK_DECLARE TK_ILETTER:l TK_SEP {: RESULT =l + "\tDS\t1\n"; :}
-	| TK_ILETTER:l TK_EQUAL expr:e TK_SEP {: RESULT = "\tPUSH\t" + l +"\n"+ e + "\tSTORE\n"; :} 
+	| TK_DECLARE TK_ILETTER:l TK_SQRB_L TK_ICNST:c TK_SQRB_R {: RESULT = l + "\tDS\t" + c + "\n"; :} 
+	| TK_ILETTER:l TK_EQUAL expr:e TK_SEP {: RESULT = "\tPUSH\t" + l +"\n"+ e + "\tSTORE\n"; :}
+	| TK_DECLARE TK_ILETTER:l TK_EQUAL expr:e TK_SEP 
+		{: RESULT = l + "\tDS\t1\n\tPUSH\t" + l + "\n" + e + "\tSTORE\n"; :}
+	| TK_ILETTER:l TK_EQUAL TK_INPUT TK_PARENTHESE_L TK_PARENTHESE_R 
+		{: RESULT = "\tPUSH\t" + l + "\n" + "\tIN\n" + "\tSTORE\n"; :} 
 	| TK_IF expr:c TK_THEN LB linst:b RB
 		{: String lab = "fin";
 		   RESULT = c + "\n\tBEZ\t" + lab + "\n" + b + "\n" + lab + "\tEQU  *\n"; :}
 	| TK_IF expr:c TK_THEN LB linst:b RB TK_ELSE LB inst:i RB
 		{: String lab1 = "labelse";
 		   String lab2 = "labfin";
-		   RESULT = c + "\n\tBEZ\t" + lab1 + "\n" + b + "\n\tPUSH\t" + lab2 +"\n\tGOTO\n" + lab1 + "\tEQU *\n\t" + i + "\n" + lab2 + "\tEQU *\n"; :} 
+		   RESULT = c + "\n\tBEZ\t" + lab1 + "\n" + b + "\n\tPUSH\t" + lab2 +"\n\tGOTO\n" + lab1 + "\tEQU *\n\t" + i + "\n" + lab2 + "\tEQU *\n"; :}
+	| TK_WHILE expr:c LB linst:b RB TK_SEP
+		{:String lab1 = "sortie";
+		  String lab2 = "entree";
+		  RESULT = lab2 + "\tEQU *\n" + c + "\n\tBEZ\t" + lab1 + "\n\t" + b + "\n\tPUSH\t" +
+ lab2 + "\n\tGOTO\n" + lab1 + "\tEQU *\n"; :}
 	;
 print ::= TK_PRINT expr:e
         {:
@@ -68,5 +84,8 @@ expr ::= TK_ICNST:i {: RESULT = "\tPUSH\t" + i + "\n"; :}
   | expr:e1 TK_MINUS expr:e2 {: RESULT = e1 + e2 + "\tSUB\n"; :}
   | TK_PARENTHESE_L expr:e TK_PARENTHESE_R {: RESULT = e; :}
   | expr:e1 TK_MULTIPLE expr:e2 {: RESULT = e1 + e2 + "\tMUL\n"; :}
-  | expr:e1 TK_DIVIDE expr:e2 {: RESULT = e1 + e2 + "\tDIV\n";:} 
+  | expr:e1 TK_DIVIDE expr:e2 {: RESULT = e1 + e2 + "\tDIV\n"; :}
+  | TK_MINUS expr:e {: RESULT = "\tPUSH\t0\n" + e + "\tSUB\n"; :}
+  | expr:e1 TK_MODULO expr:e2 {: RESULT = e1 + e2  +e1 + e2 + "\tDIV\n" + "\tMUL\n" + "\tSUB\n"; :}
+  
 	;

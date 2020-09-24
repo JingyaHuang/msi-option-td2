@@ -15,17 +15,22 @@ ILETTER = [a-zA-Z]+
 "="		{ return new Symbol(sym.TK_EQUAL);}
 "*"		{ return new Symbol(sym.TK_MULTIPLE);}
 "/"		{ return new Symbol(sym.TK_DIVIDE);}
+"%"		{ return new Symbol(sym.TK_MODULO);}
 "("		{ return new Symbol(sym.TK_PARENTHESE_L);}
 ")"		{ return new Symbol(sym.TK_PARENTHESE_R);}
 "-"		{ return new Symbol(sym.TK_MINUS);}
 "print"		{ return new Symbol(sym.TK_PRINT);}
+"input"		{ return new Symbol(sym.TK_INPUT);}
 ";"		{ return new Symbol(sym.TK_SEP);}
 "dim"		{ return new Symbol(sym.TK_DECLARE);}
 "if"		{ return new Symbol(sym.TK_IF);}
 "then"		{ return new Symbol(sym.TK_THEN);}
 "else"		{ return new Symbol(sym.TK_ELSE);}
+"while"		{ return new Symbol(sym.TK_WHILE);}
 "{"		{ return new Symbol(sym.LB);}
 "}"		{ return new Symbol(sym.RB);}
+"["		{ return new Symbol(sym.TK_SQRB_L);}
+"]"		{ return new Symbol(sym.TK_SQRB_R);}
 ^#.*		{}
 ^###[\s\S]*###$	{}
 {ICNST}		{ return new Symbol(sym.TK_ICNST, new Integer(yytext())); }
