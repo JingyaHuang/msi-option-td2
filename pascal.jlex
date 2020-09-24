@@ -12,6 +12,7 @@ ILETTER = [a-zA-Z]+
 %%
 
 "+"		{ return new Symbol(sym.TK_ADD);}
+"="		{ return new Symbol(sym.TK_EQUAL);}
 "*"		{ return new Symbol(sym.TK_MULTIPLE);}
 "/"		{ return new Symbol(sym.TK_DIVIDE);}
 "("		{ return new Symbol(sym.TK_PARENTHESE_L);}
@@ -19,7 +20,12 @@ ILETTER = [a-zA-Z]+
 "-"		{ return new Symbol(sym.TK_MINUS);}
 "print"		{ return new Symbol(sym.TK_PRINT);}
 ";"		{ return new Symbol(sym.TK_SEP);}
-//"dim"		{ return new Symbol(sym.TK_DECLARE);}
+"dim"		{ return new Symbol(sym.TK_DECLARE);}
+"if"		{ return new Symbol(sym.TK_IF);}
+"then"		{ return new Symbol(sym.TK_THEN);}
+"else"		{ return new Symbol(sym.TK_ELSE);}
+"{"		{ return new Symbol(sym.LB);}
+"}"		{ return new Symbol(sym.RB);}
 ^#.*		{}
 ^###[\s\S]*###$	{}
 {ICNST}		{ return new Symbol(sym.TK_ICNST, new Integer(yytext())); }
