@@ -18,14 +18,18 @@ action code {:
   String make_comm(String comment) {
     return ";/ " + comment + "\n";
   }
+
+  String current_func="fun";
 :}
 
 terminal TK_SEP, TK_PRINT, TK_ADD, TK_MINUS, TK_PARENTHESE_L, TK_PARENTHESE_R, TK_MULTIPLE, TK_DIVIDE, TK_DECLARE, TK_EQUAL, TK_IF, TK_ELSE, TK_THEN, TK_WHILE, LB, RB, TK_MODULO, TK_INPUT, TK_SQRB_L, TK_SQRB_R;
+terminal TK_COMMA, TK_FUNC, TK_CALL;
 terminal Integer TK_ICNST;
 terminal String TK_ILETTER;
 
 non terminal target;
-non terminal String program, linst, inst, print, expr;
+non terminal String program, linst, inst, print, expr, fonction;
+non terminal List<String> lvar;
 
 precedence left TK_IF, TK_THEN, TK_ELSE, TK_WHILE;
 precedence left LB, RB;
@@ -51,13 +55,15 @@ linst ::= inst:i {: RESULT = i; :}
 inst  ::= print:i TK_SEP {: RESULT = i; :}
 	| TK_SEP {: RESULT = ""; :}
 	| TK_INPUT TK_PARENTHESE_L TK_PARENTHESE_R {: RESULT = "\tIN\n"; :}
-	| TK_DECLARE TK_ILETTER:l TK_SEP {: RESULT =l + "\tDS\t1\n"; :}
-	| TK_DECLARE TK_ILETTER:l TK_SQRB_L TK_ICNST:c TK_SQRB_R {: RESULT = l + "\tDS\t" + c + "\n"; :} 
-	| TK_ILETTER:l TK_EQUAL expr:e TK_SEP {: RESULT = "\tPUSH\t" + l +"\n"+ e + "\tSTORE\n"; :}
+	| TK_DECLARE TK_ILETTER:l TK_SEP {: RESULT = current_func + ":" + l + "\tDS\t1\n"; :}
+	| TK_DECLARE TK_ILETTER:l TK_SQRB_L TK_ICNST:c TK_SQRB_R {: RESULT = current_func + ":" + l + "\tDS\t" + c + "\n"; :}
+	| TK_DECLARE TK_SQRB_L TK_ICNST:c TK_SQRB_R lvar:l TK_SEP 
+{: for (String s:l) {RESULT = s + "\tDS\t" + c + "\n";}; :}  
+	| TK_ILETTER:l TK_EQUAL expr:e TK_SEP {: RESULT = "\tPUSH\t" + current_func + ":" + l +"\n"+ e + "\tSTORE\n"; :}
 	| TK_DECLARE TK_ILETTER:l TK_EQUAL expr:e TK_SEP 
-		{: RESULT = l + "\tDS\t1\n\tPUSH\t" + l + "\n" + e + "\tSTORE\n"; :}
+		{: RESULT = current_func + ":" + l + "\tDS\t1\n\tPUSH\t" + l + "\n" + e + "\tSTORE\n"; :}
 	| TK_ILETTER:l TK_EQUAL TK_INPUT TK_PARENTHESE_L TK_PARENTHESE_R 
-		{: RESULT = "\tPUSH\t" + l + "\n" + "\tIN\n" + "\tSTORE\n"; :} 
+		{: RESULT = "\tPUSH\t" + current_func + ":" + l + "\n" + "\tIN\n" + "\tSTORE\n"; :} 
 	| TK_IF expr:c TK_THEN LB linst:b RB
 		{: String lab = "fin";
 		   RESULT = c + "\n\tBEZ\t" + lab + "\n" + b + "\n" + lab + "\tEQU  *\n"; :}
@@ -70,7 +76,11 @@ inst  ::= print:i TK_SEP {: RESULT = i; :}
 		  String lab2 = "entree";
 		  RESULT = lab2 + "\tEQU *\n" + c + "\n\tBEZ\t" + lab1 + "\n\t" + b + "\n\tPUSH\t" +
  lab2 + "\n\tGOTO\n" + lab1 + "\tEQU *\n"; :}
+	| TK_CALL TK_ILETTER:nf TK_SEP
+		{:String lab = "ret";
+		  RESULT="\tPUSH\t" + lab +"\n\tPUSH\t@" + nf + "\n\tGOTO\n" + lab + "\tEQU  *\n"; :}
 	;
+
 print ::= TK_PRINT expr:e
         {:
 	    String comment = make_comm("print...");
@@ -79,13 +89,23 @@ print ::= TK_PRINT expr:e
 	;
 
 expr ::= TK_ICNST:i {: RESULT = "\tPUSH\t" + i + "\n"; :}
-  | TK_ILETTER:l {: RESULT = "\tPUSH\t" + l + "\n\tLOAD\n"; :}
+  | TK_ILETTER:l {: RESULT = "\tPUSH\t" + current_func + ":" + l + "\n\tLOAD\n"; :}
   | expr:e1 TK_ADD expr:e2 {: RESULT = e1 + e2 + "\tADD\n"; :}
   | expr:e1 TK_MINUS expr:e2 {: RESULT = e1 + e2 + "\tSUB\n"; :}
   | TK_PARENTHESE_L expr:e TK_PARENTHESE_R {: RESULT = e; :}
   | expr:e1 TK_MULTIPLE expr:e2 {: RESULT = e1 + e2 + "\tMUL\n"; :}
   | expr:e1 TK_DIVIDE expr:e2 {: RESULT = e1 + e2 + "\tDIV\n"; :}
   | TK_MINUS expr:e {: RESULT = "\tPUSH\t0\n" + e + "\tSUB\n"; :}
-  | expr:e1 TK_MODULO expr:e2 {: RESULT = e1 + e2  +e1 + e2 + "\tDIV\n" + "\tMUL\n" + "\tSUB\n"; :}
-  
+  | expr:e1 TK_MODULO expr:e2 {: RESULT = e1 + e2  +e1 + e2 + "\tDIV\n" + "\tMUL\n" + "\tSUB\n"; :}  
+	;
+
+lvar ::= TK_ILETTER:i {: List<String> l = new LinkedList(); l.add(i); RESULT = l; :}
+     | lvar:l TK_COMMA TK_ILETTER:i {: l.add(i) ; RESULT = l;  :} 
+     ;
+
+fonction ::= TK_FUNC TK_ILETTER:nf {: current_func = nf; :} TK_PARENTHESE_L TK_PARENTHESE_R LB linst:li RB
+	{: String lab = "finddef"; 
+	   RESULT = "\tPUSH\t" + lab  +"\n\tGOTO\n@" + nf + "\tEQU  *\n" + li + "\tGOTO\n" + lab + "\tEQU  *\n";
+           current_func = "default"; 
+	:}
 	;

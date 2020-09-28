@@ -17,7 +17,11 @@ quo = num;
 while residu {quo = quo - 1; residu = num % quo;};
 print quo;
 ###
-dim a[13];
+#dim a[13];
+#dim[10] l,a;
+#dim[10] l,b;
+fun foo() { print(3);};
+#call foo;
 
  
 

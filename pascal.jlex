@@ -22,7 +22,10 @@ ILETTER = [a-zA-Z]+
 "print"		{ return new Symbol(sym.TK_PRINT);}
 "input"		{ return new Symbol(sym.TK_INPUT);}
 ";"		{ return new Symbol(sym.TK_SEP);}
+","		{ return new Symbol(sym.TK_COMMA);}
 "dim"		{ return new Symbol(sym.TK_DECLARE);}
+"fun"		{ return new Symbol(sym.TK_FUNC);}
+"call"		{ return new Symbol(sym.TK_CALL);}
 "if"		{ return new Symbol(sym.TK_IF);}
 "then"		{ return new Symbol(sym.TK_THEN);}
 "else"		{ return new Symbol(sym.TK_ELSE);}
