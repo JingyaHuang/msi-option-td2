@@ -24,8 +24,11 @@ ILETTER = [a-zA-Z]+
 ";"		{ return new Symbol(sym.TK_SEP);}
 ","		{ return new Symbol(sym.TK_COMMA);}
 "dim"		{ return new Symbol(sym.TK_DECLARE);}
+"append"	{ return new Symbol(sym.TK_APPEND);}
+"void"		{ return new Symbol(sym.TK_VOID);}
 "fun"		{ return new Symbol(sym.TK_FUNC);}
 "call"		{ return new Symbol(sym.TK_CALL);}
+"return"	{ return new Symbol(sym.TK_RETURN);}
 "if"		{ return new Symbol(sym.TK_IF);}
 "then"		{ return new Symbol(sym.TK_THEN);}
 "else"		{ return new Symbol(sym.TK_ELSE);}
